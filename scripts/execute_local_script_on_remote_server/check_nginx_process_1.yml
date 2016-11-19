@@ -1,0 +1,10 @@
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: copy file
+    copy: src=check_nginx_process.py dest=/opt/check_nginx.sh owner=root mode=755
+    register: info
+  - name: Execute Script
+    shell: sh /opt/check_nginx.sh
+  - name: display ping host result
+    debug: msg="The result is {{info}}"

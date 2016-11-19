@@ -1,18 +1,19 @@
 # encoding:utf-8
-import ansible.runner
-import ansible.playbook
-import ansible.inventory
-from ansible import callbacks
-from ansible import utils
 import json
+
+import ansible.inventory
+import ansible.playbook
+import ansible.runner
+from ansible import callbacks, utils
 
 # the fastest way to set up the inventory
 
 # hosts list
 hosts = ["192.168.56.101"]
-# set up the inventory, if no group is defined then 'all' group is used by default
+# set up the inventory, if no group is defined then 'all' group is used by
+# default
 example_inventory = ansible.inventory.Inventory(hosts)
-ansible.constants.HOST_KEY_CHECKING = False # 会自动在know_hosts添加的
+ansible.constants.HOST_KEY_CHECKING = False  # 会自动在know_hosts添加的
 pm = ansible.runner.Runner(
     module_name='command',
     module_args='uname -a',

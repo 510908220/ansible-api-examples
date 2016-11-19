@@ -1,0 +1,8 @@
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: ping host
+    ping:
+    register: info
+  - name: display ping host result
+    debug: msg="The result is {{info}}"

@@ -1,0 +1,8 @@
+- hosts: all
+  gather_facts: no
+  tasks:
+  - name: check nginx
+    script: check_nginx_process.py
+    register: out
+  - name: display check result
+    debug: msg="The result is {{out}}"
