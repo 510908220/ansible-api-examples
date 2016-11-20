@@ -3,6 +3,6 @@
   tasks:
   - name: ping host
     ping:
-    register: info
+    register: out
   - name: display ping host result
-    debug: msg="The result is {{info}}"
+    debug: var=out verbosity=2
