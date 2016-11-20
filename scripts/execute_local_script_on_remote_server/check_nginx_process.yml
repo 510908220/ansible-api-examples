@@ -5,4 +5,4 @@
     script: check_nginx_process.py
     register: out
   - name: display check result
-    debug: msg="The result is {{out}}"
+    debug: var=out verbosity=2

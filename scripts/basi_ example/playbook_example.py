@@ -1,3 +1,4 @@
+# -*- encoding:utf-8 -*-
 import json
 
 import ansible.inventory
@@ -7,7 +8,7 @@ from ansible import callbacks, utils
 
 hosts = ["192.168.33.101"]
 example_inventory = ansible.inventory.Inventory(hosts)
-
+ansible.constants.HOST_KEY_CHECKING = False  # 会自动在know_hosts添加的
 # setting callbacks
 stats = callbacks.AggregateStats()
 playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)

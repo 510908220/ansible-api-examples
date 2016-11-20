@@ -2,9 +2,9 @@
   gather_facts: no
   tasks:
   - name: copy file
-    copy: src=check_nginx_process.py dest=/opt/check_nginx.sh owner=root mode=755
-    register: info
+    copy: src=check_nginx_process.py dest=/opt/check_nginx_process.py owner=root mode=755
   - name: Execute Script
-    shell: sh /opt/check_nginx.sh
+    shell: python /opt/check_nginx_process.py
+    register: out
   - name: display ping host result
-    debug: msg="The result is {{info}}"
+    debug: var=out verbosity=2
