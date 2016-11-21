@@ -192,3 +192,6 @@ class CallbackModule(object):
     def playbook_on_start(self):
         pass
 ```
+
+## 参考
+- [how-to-pass-data-to-my-callback](http://grokbase.com/t/gg/ansible-devel/14c2qm038n/how-to-pass-data-to-my-callback)
