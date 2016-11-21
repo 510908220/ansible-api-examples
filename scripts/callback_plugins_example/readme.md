@@ -76,26 +76,85 @@ class CallbackModule(object):
 - ```__init__```和```playbook_on_stats```都是在主进程执行的.
 - ```其他```回调都是不同的进程id.
 
-那么,还是得老老实实的在每一个回调里保存日志了. 但是我需要区别每一次playbook的执行情况. 怎么办呢? 查询资料最后的方法是使用环境变量:
+那还是老老实实在每一句会调里都打印一条日志, 但是要是插入数据库的话如果一个playbook有很多task,很多host的话数据库插入是很频繁的. 所以还是想着怎么能汇总起来进行一次插入就好了. 所谓山重水复疑无路,柳暗花明又一村. 在python里有一个类```Manager```可以实现多个进程操作同一个列表或字典. 看官方的例子:
 ```
+from multiprocessing import Process, Manager
+
+def f(d, l):
+    d[1] = '1'
+    d['2'] = 2
+    d[0.25] = None
+    l.reverse()
+
+if __name__ == '__main__':
+    manager = Manager()
+
+    d = manager.dict()
+    l = manager.list(range(10))
+
+    p = Process(target=f, args=(d, l))
+    p.start()
+    p.join()
+
+    print d
+    print l
+```
+输出:
+```
+{0.25: None, 1: '1', '2': 2}
+[9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+```
+希望来了, 上代码:
+
+```
+
+import json
+from multiprocessing import Process, Manager
+from collections import defaultdict
+
+
 class CallbackModule(object):
     def __init__(self):
-        self.job_id = os.environ['MY_JOB_ID']
+        self.result_list = Manager().list()
 
     def playbook_on_start(self):
         pass
 
     def runner_on_failed(self, host, res, ignore_errors=False):
-        print host, self.job_id
+        self.result_list.append(
+            {
+                "host": host,
+                "res": res,
+                "status": "failures"
+            }
+        )
 
     def runner_on_ok(self, host, res):
-        print host, self.job_id
+        self.result_list.append(
+            {
+                "host": host,
+                "res": res,
+                "status": "ok"
+            }
+        )
 
     def runner_on_skipped(self, host, item=None):
-        pass
+        self.result_list.append(
+            {
+                "host": host,
+                "res": '',
+                "status": "skipped"
+            }
+        )
 
     def runner_on_unreachable(self, host, res):
-        print host, self.job_id
+        self.result_list.append(
+            {
+                "host": host,
+                "res": res,
+                "status": "unreachable"
+            }
+        )
 
     def playbook_on_stats(self, stats):
         """Complete: Flush log to database"""
@@ -105,8 +164,31 @@ class CallbackModule(object):
         for h in hosts:
             t = stats.summarize(h)
             summary[h] = t
-        print self.job_id, summary
+
+        task_summary = defaultdict(lambda: defaultdict(list))
+        for task_execute_item in self.result_list:
+            host = task_execute_item["host"]
+            status = task_execute_item["status"]
+            res = task_execute_item["res"]
+            task_summary[host][status].append(res)
+
+        result = {
+            "summary": summary,
+            "task_summary": task_summary
+
+        }
+        print json.dumps(result, sort_keys=True, indent=4, separators=(',', ': '))
 ```
-因为插件机制就是这样的,所以利用环境变量传递变量是个很好的办法. 这样可以详细的记录playbook每次执行信息:
-- ```playbook_on_stats```记录执行的一个汇总(成功多少,失败多少等)
-- ```其他回调```记录任务每一次执行详情.
+现在已经可以将一次playbook执行的信息汇总起来了. 但是还缺少怎么去标识这一次任务执行呢?
+在网上苦寻一番,解决方案是利用环境变量.
+- 在playbook里设置:  ```os.environ['MY_JOB_ID'] = str(uuid.uuid4())```
+- 在插件里读取:
+```
+class CallbackModule(object):
+    def __init__(self):
+        self.job_id = os.environ['MY_JOB_ID']
+        self.result_list = Manager().list()
+
+    def playbook_on_start(self):
+        pass
+```

@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+import ansible.playbook
 import ansible.inventory
 from ansible import callbacks
 from ansible import utils
