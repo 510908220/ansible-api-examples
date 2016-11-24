@@ -5,7 +5,7 @@
 ```
 ~/.ansible/plugins/callback_plugins:/usr/share/ansible_plugins/callback_plugins
 ```
-为了不影响全局配置,这里是直接修改变量```ansible.constants.DEFAULT_CALLBACK_PLUGIN_PATH```的值来加载我们自己的插件.
+为了不影响全局配置,在```playbook```当前目录创建```callback_plugins```就可以加载自定义插件.
 
 ## 插件执行的说明
 一个简单的插件如图:
