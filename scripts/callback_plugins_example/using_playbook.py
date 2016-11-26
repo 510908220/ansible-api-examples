@@ -1,14 +1,13 @@
 # -*- encoding: utf-8 -*-
 import json
-import uuid
 import os
-import ansible.playbook
+import uuid
+
 import ansible.inventory
-from ansible import callbacks
-from ansible import utils
+import ansible.playbook
+from ansible import callbacks, utils
 
 ansible.constants.HOST_KEY_CHECKING = False
-ansible.constants.DEFAULT_CALLBACK_PLUGIN_PATH += ":%s" % "callback_plugins"
 
 hosts = ["192.168.33.101"]
 example_inventory = ansible.inventory.Inventory(hosts)
